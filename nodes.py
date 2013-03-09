@@ -69,22 +69,49 @@ def drawAll():
     drawBot(120,120,10)
     screen.unlock()
     pygame.display.update()
-    
 
+def makeTimer( seconds ):
+    """
+    Makes a lambda function which returns true while their is time remaining.
 
+    @param seconds is the number seconds to return true.
+
+    @return a lambda function thats true while for number of seconds.
+
+    Example
+    >>> import time
+    >>> timer = makeTimer( 0.100 )
+    >>> timer()
+    True
+    >>> startTime = time.time()
+    >>> while timer() and startTime + 0.200 > time.time():
+    ...     pass
+    >>> timer()
+    False
+    """
+    import time
+    startTime = time.time()
+    return lambda : time.time() - startTime < seconds
+
+# By default accept all mouse up events.
+ignoreNextMouseUpEvent = lambda: False
 while 1:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        # Ignore mouse up events.
+        if ignoreNextMouseUpEvent() and ( event.type == pygame.MOUSEBUTTONDOWN \
+         or event.type == pygame.MOUSEBUTTONUP ):
+            print "ignore mouse Up"
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             posDown=pygame.mouse.get_pos()
             downNode=whatNode(posDown)[0]
             #note which node it is in
             drawFlag = 1
-
-
+            
+            
         elif event.type == pygame.MOUSEBUTTONUP:
             print "mouse Up"
             posUp = pygame.mouse.get_pos()
@@ -101,7 +128,6 @@ while 1:
                         right_mouse=pygame.mouse.get_pressed()
                         print right_mouse
                         if right_mouse[2] == 1:
-                                pygame.event.clear()
                                 drawFlag=0
                                 while 1:
                                     if edit.editNode(upNode):
@@ -109,7 +135,8 @@ while 1:
                                             
                                     else:
                                             break
-                                pygame.event.clear()
+                                # Ignore mouse clicks for the next 100 ms
+                                ignoreNextMouseUpEvent = makeTimer(0.100)
                         else:
                                 graph.removeNode(whatNode(posDown)[0])  #remove that node
                     else: # but if they were two different nodes
