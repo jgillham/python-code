@@ -95,7 +95,7 @@ def penalizeBranch(index,penalty):
         if nodes[i][3]==index:
             penalizeBranch(i, penalty)
 
-penalty=10
+penalty=0
 flag=0
 
 drawBackground()
