@@ -1,13 +1,12 @@
-import pygame, sys, math, graph, edit, random
+import pygame, sys, math, graph, edit
 from pygame.locals import *
 
-if __name__ == "__main__":
-    graph = graph.Graph()
-    dummy = graph.addNode(-10,-10)
-    pygame.init()
-    screen=pygame.display.set_mode((960,960),0,32)
-    pose = (0,0,0)
-    drawFlag = 1
+graph = graph.Graph()
+dummy = graph.addNode(-10,-10)
+pygame.init()
+screen=pygame.display.set_mode((960,960),0,32)
+pose = (0,0,0)
+drawFlag = 1
 
 def drawObjects():
         blocks = [(273,235,34,34),(960-34,183,34,34),(253,591,34,34),(755,723,34,34)]
@@ -30,14 +29,13 @@ def drawObjects():
         for line in lines:
             pygame.draw.line(screen,colorLine, (1.357*line[0],1.357*line[1]),(1.357*line[2],1.357*line[3]), 20)
         drawBot(pose[0], pose[1], pose[2])
-
-def drawBotTempPath():
-    pygame.draw.line(screen, (255,0,0), (child[0],child[1]), (nodes[child[3]][0],nodes[child[3]][1]), 2)
+        pygame.display.update()
 
 def drawBot(x,y,theta):
         theta = theta * math.pi/180
         pygame.draw.polygon(screen, (245,245,245), ((x+60*math.cos(theta)-60*math.sin(theta),y-60*math.sin(theta)-60*math.cos(theta)),(x-60*math.cos(theta)-60*math.sin(theta),y+60*math.sin(theta)-60*math.cos(theta)),(x-60*math.cos(theta)+60*math.sin(theta),y+60*math.sin(theta)+60*math.cos(theta)),(x+60*math.cos(theta)+60*math.sin(theta),y-60*math.sin(theta)+60*math.cos(theta))), 3)
         pygame.draw.line(screen,(245,245,245), (x,y),(x-60*math.sin(theta),y-60*math.cos(theta)),3)
+        pygame.display.update()
 
 def whatNode((x,y)):
     nearestNode=graph.nodes[0]
@@ -98,7 +96,7 @@ def makeTimer( seconds ):
 
 # By default accept all mouse up events.
 ignoreNextMouseUpEvent = lambda: False
-while  __name__ == "__main__":
+while 1:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
@@ -157,84 +155,4 @@ while  __name__ == "__main__":
         drawAll()
         drawFlag=0
 
-def generateNode(node,end):
-    """
-    Generates a node that is closer to the end node. If the end node is close 
-     enough, the generated node is the end node.
 
-    Examples:
-    >>> first = ( 0, 1 )
-    >>> last = ( 100, 50 )
-    >>> oldDistance = math.hypot( last[0] - first[0], last[1] - first[1] )
-    >>> next = generateNode( first, last )
-    >>> newDistance  = math.hypot( last[0] - next[0], last[1] - next[1] )
-    >>> oldDistance > newDistance
-    True
-    >>> generateNode( (0,1), (100,50) )
-    (100, 50)
-    """
-    parent = node
-    distanceShortest = 10**11
-    for i in range(100):
-        x,y = node[0],node[1] #starting point
-        oldDistance = math.hypot(x-end[0],y-end[1])
-        r=random.gauss(60,5) # add 1 foot
-        if oldDistance<120:
-            r=oldDistance
-        #rBest=r
-        theta = random.randint(0,360)
-        #thetaBest=theta
-        newX=x+r*math.cos(math.pi/180*theta)
-        newY=y+r*math.sin(math.pi/180*theta)
-        distance=math.hypot(newX-end[0],newY-end[1]) #distance to end
-
-        #for line in lines:
-        #    if math.hypot(x+r*math.cos(math.pi/180*theta)-line[0],y+r*math.sin(math.pi/180*theta)-line[1])<=105:
-        #        distance+=10**10
-        for circle in circles:
-            if math.hypot(x+r*math.cos(math.pi/180*theta)-circle[0],y+r*math.sin(math.pi/180*theta)-circle[1])<=105:
-                distance+=10**10
-            distance += 10**2/math.hypot(x+r*math.cos(math.pi/180*theta)-circle[0],y+r*math.sin(math.pi/180*theta)-circle[1])**2
-        for block in blocks:
-            if math.hypot(x+r*math.cos(math.pi/180*theta)-block[0],y+r*math.sin(math.pi/180*theta)-block[1])<=105:
-                distance+=10**10
-            distance += 10**2/math.hypot(x+r*math.cos(math.pi/180*theta)-block[0]+17,y+r*math.sin(math.pi/180*theta)-block[1]+17)**2
-       # distance += 100/abs(newX-960)**2 + 100/abs(newX-0)**2 + 100/abs(newY-0)**2 + 100/abs(newY-960)**2
-        if abs(newX-960)<80 or abs(newX-0)<80:
-            distance+=10**10
-        if abs(newY-960)<80 or abs(newY-0)<80:
-            distance+=10**10
-
-        if distance<distanceShortest:
-            rBest=r
-            thetaBest=theta
-            distanceShortest=distance
-    return(x+rBest*math.cos(math.pi/180*thetaBest),y+rBest*math.sin(math.pi/180*thetaBest))
-
-
-def penalizeBranch(index,penalty):
-    nodes[index][2]+=penalty #penalty
-    for i in range(1,len(nodes)):
-        nodes[index][2]+=penalty #penalty
-        if nodes[i][3]==index:
-            penalizeBranch(i, penalty)
-def generatePath( path, start, end ):
-    """
-    Generates a path from the start to the end.
-
-    Example:
-    >>> path = generatePath( [], (0,0), (100,100) )
-    >>> path[0]
-    (0, 0)
-    >>> path[-1]
-    (100, 100)
-    """
-    if len(path) == 0:
-        path.append( start )
-    first = path[-1]
-    last = generateNode( first, end )
-    path.append( last )
-    if math.hypot(last[0]-end[0],last[1]-end[1])>10:
-        return generatePath( path, last, end )
-    else:
-        return path
